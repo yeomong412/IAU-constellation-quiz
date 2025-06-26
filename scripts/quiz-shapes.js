@@ -16,8 +16,7 @@ const toggleBtn = document.getElementById("toggle-lines");
 function coordsKey(ra, dec) { //적경 좌표와 적위 좌표 소수점 네자리에서 끊기.
   return `${ra.toFixed(4)}:${dec.toFixed(4)}`;
 }
-
-function drawConstellation({ shape, major_stars }) { // 별자리 그리기
+function drawConstellation({ shape, major_stars, lines, ra_range, dec_range }) {
   svg.innerHTML = "";
   allStars = [];
 
@@ -25,7 +24,7 @@ function drawConstellation({ shape, major_stars }) { // 별자리 그리기
 
   shape.forEach(([ra, dec]) => {
     const isMajor = majorSet.has(coordsKey(ra, dec));
-    const [x, y] = raDecToXY(ra, dec);
+    const [x, y] = raDecToXY(ra, dec, ra_range, dec_range);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dot.setAttribute("cx", x);
     dot.setAttribute("cy", y);
@@ -35,12 +34,12 @@ function drawConstellation({ shape, major_stars }) { // 별자리 그리기
     allStars.push({ ra, dec, isMajor });
   });
 
-  if (showLines) { // '별자리 선 보기' 옵션이 켜져있을 경우
-    for (let i = 0; i < shape.length - 1; i++) {
+  if (showLines && Array.isArray(lines)) {
+    lines.forEach(([i, j]) => {
       const [ra1, dec1] = shape[i];
-      const [ra2, dec2] = shape[i + 1];
-      const [x1, y1] = raDecToXY(ra1, dec1);
-      const [x2, y2] = raDecToXY(ra2, dec2);
+      const [ra2, dec2] = shape[j];
+      const [x1, y1] = raDecToXY(ra1, dec1, ra_range, dec_range);
+      const [x2, y2] = raDecToXY(ra2, dec2, ra_range, dec_range);
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", x1);
       line.setAttribute("y1", y1);
@@ -49,7 +48,7 @@ function drawConstellation({ shape, major_stars }) { // 별자리 그리기
       line.setAttribute("stroke", "white");
       line.setAttribute("stroke-opacity", "0.4");
       svg.appendChild(line);
-    }
+    });
   }
 }
 
@@ -74,7 +73,7 @@ function loadNext() {
   const next = data[Math.floor(Math.random() * data.length)];
   const nextStars = next.shape.map(([ra, dec]) => ({ ra, dec }));
 
-  fadeTransition(svg, allStars, nextStars, 400, () => {
+  fadeTransition(svg, allStars, nextStars, 400, next.ra_range, next.dec_range,() => {
     drawConstellation(next);
     current = next;
   });
