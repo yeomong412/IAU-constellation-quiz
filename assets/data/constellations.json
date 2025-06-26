@@ -3,17 +3,17 @@
     "name_en": "Orion",
     "name_ko": "오리온자리",
     "abbr": "Ori",
-    "ra_range": [4.5, 6.5],
-    "dec_range": [-10, 10],
+    "ra_range": [71, 95],
+    "dec_range": [-10, 22],
     "major_stars": [
-      { "name": "Betelgeuse", "ra": 5.9195, "dec": 7.4070 },
-      { "name": "Rigel", "ra": 5.2423, "dec": -8.2016 },
-      { "name": "Bellatrix", "ra": 5.4189, "dec": 6.3497 }
+      { "name": "Betelgeuse", "ra": 89.1333, "dec": 7.4122 },
+      { "name": "Rigel", "ra": 78.93672, "dec": -8.1713 },
+      { "name": "Bellatrix", "ra": 81.62008, "dec": 6.3731 }
     ],
     "shape": [
-      [5.9195, 7.4070],
-      [5.4189, 6.3497],
-      [5.2423, -8.2016]
+      [89.1333, 7.4122],
+      [78.93672, -8.1713],
+      [81.62008, 6.3731]
     ],
     "is_zodiac": false,
     "is_equatorial": true
