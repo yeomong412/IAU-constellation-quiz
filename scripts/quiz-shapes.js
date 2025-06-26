@@ -62,7 +62,7 @@ function checkAnswer() {
     feedback.textContent = "✅ 정답입니다!";
     feedback.style.color = "lightgreen";
   } else {
-    feedback.textContent = `❌ 오답! 정답: ${current.name_ko}`;
+    feedback.textContent = `❌ 오답! 정답: ${current.name_ko}, ${current.name_en}, ${current.abbr}`;
     feedback.style.color = "tomato";
   }
 }
