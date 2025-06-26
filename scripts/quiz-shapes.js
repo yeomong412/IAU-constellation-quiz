@@ -50,7 +50,7 @@ function drawConstellation({ shape, major_stars, lines, ra_range, dec_range }) {
       svg.appendChild(line);
     });
   }
-}
+}//
 
 function checkAnswer() {
   const guess = answerInput.value.trim().toLowerCase();
