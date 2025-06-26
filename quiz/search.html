@@ -3,35 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>별자리 퀴즈</title>
+  <title>별자리 검색</title>
   <link rel="stylesheet" href="../styles/main.css"/>
 </head>
 <body>
-    <!-- 상단 사이트 이름 -->
   <header class="site-header">
-    <h1>IAU 별자리 외우기</h1>
+    <h1>IAU 별자리 검색</h1>
   </header>
-  <main class="container">
-    <svg id="constellation" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
-    
-    <div class="input-section">
-      <input type="text" id="answer" placeholder="[/]를 눌러 입력란으로 커서 이동" />
-      <button id="submit-button">제출</button>
-    </div>
 
-    <div id="feedback"></div>
- 
+  <main class="container">
+    <input type="text" id="search-input" placeholder="별자리 이름 또는 약자 입력" />
+    <ul id="search-results"></ul>
+
+    <svg id="constellation" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+
+    <div id="info-box"></div>
+
     <div class="controls">
-      <button id="next-button">다음 문제</button>
       <button id="toggle-lines">선 끄기</button>
       <button onclick="location.href='/index.html'">홈으로</button>
     </div>
-    <a>[shift]+[enter]로 다음 문제 이동, [enter]로 답 제출</a>
   </main>
-    <footer class="site-footer">
+
+  <footer class="site-footer">
     <small>made by @yeomong0804</small>
   </footer>
-  <script type="module" src="../scripts/quiz-shapes.js"></script>
+
+  <script type="module" src="../scripts/search.js"></script>
 </body>
 </html>
-
