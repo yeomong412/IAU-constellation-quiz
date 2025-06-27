@@ -22,3 +22,4 @@ export function raDecToXY(ra, dec, ra_range, dec_range) {
   }
   return [x, y];
 }
+
