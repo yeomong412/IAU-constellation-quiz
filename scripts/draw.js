@@ -21,14 +21,17 @@ function loadNext() {
   feedback.textContent = '';
 
   fetch("../assets/data/constellations.json")
-    .then(res => res.json())
-    .then(data => {
-      const next = data[Math.floor(Math.random() * data.length)];
-      currentConst = next;
-      document.getElementById("quiz-question").textContent =
-        currentConst.name_ko + " (" + currentConst.name_en + ")";
-      isReady = true;  // 여기서 다시 true
-    });
+  .then((res) => res.json())
+  .then((data) => {
+    currentConst = data[0];
+    document.getElementById("quiz-question").textContent =
+      currentConst.name_ko + " (" + currentConst.name_en + ")";
+
+    drawArea.addEventListener("click", handleClick);
+    document.getElementById("submit").onclick = checkAnswer;
+    document.getElementById("reset").onclick = resetAll;
+    document.getElementById("next").onclick = loadNext;  // 여기에 넣는 게 안전
+  });
 }
 
 fetch("../assets/data/constellations.json")
