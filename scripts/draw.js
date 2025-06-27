@@ -11,14 +11,15 @@ const feedback = document.getElementById("feedback");
 document.getElementById("next").onclick = loadNext;
 
 function loadNext() {
+  isReady = false;
   stars = [];
   lines = [];
   selectedIndex = null;
   drawArea.innerHTML = '';
   answerArea.innerHTML = '';
   scoreElem.textContent = '';
+  feedback.textContent = '';
 
-  // 랜덤으로 다음 별자리 선택
   fetch("../assets/data/constellations.json")
     .then(res => res.json())
     .then(data => {
@@ -26,6 +27,7 @@ function loadNext() {
       currentConst = next;
       document.getElementById("quiz-question").textContent =
         currentConst.name_ko + " (" + currentConst.name_en + ")";
+      isReady = true;  // 여기서 다시 true
     });
 }
 
