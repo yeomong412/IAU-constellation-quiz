@@ -9,7 +9,7 @@ const answerArea = document.getElementById("answer-area");
 const scoreElem = document.getElementById("score");
 const feedback = document.getElementById("feedback");
 document.getElementById("next").onclick = loadNext;
-isReady = false;
+let isReady = false;
 function loadNext() {
   isReady = false;
   stars = [];
