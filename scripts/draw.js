@@ -3,15 +3,30 @@ let stars = [];        // 사용자가 찍은 점
 let lines = [];        // 연결된 선
 let currentConst = null;
 let selectedIndex = null;
+let allData = []; // 전체 데이터 저장용
+
 
 const drawArea = document.getElementById("draw-area");
 const answerArea = document.getElementById("answer-area");
 const scoreElem = document.getElementById("score");
 const feedback = document.getElementById("feedback");
 document.getElementById("next").onclick = loadNext;
-let isReady = false;
+
+fetch("../assets/data/constellations.json")
+  .then((res) => res.json())
+  .then((data) => {
+    allData = data;
+    currentConst = allData[0];
+    document.getElementById("quiz-question").textContent =
+      currentConst.name_ko + " (" + currentConst.name_en + ")";
+    drawArea.addEventListener("click", handleClick);
+    document.getElementById("submit").onclick = checkAnswer;
+    document.getElementById("reset").onclick = resetAll;
+    document.getElementById("next").onclick = loadNext;
+  });
+
+// 🔽 이건 전혀 fetch 안 씀!
 function loadNext() {
-  isReady = false;
   stars = [];
   lines = [];
   selectedIndex = null;
@@ -20,30 +35,13 @@ function loadNext() {
   scoreElem.textContent = '';
   feedback.textContent = '';
 
-  fetch("../assets/data/constellations.json")
-  .then((res) => res.json())
-  .then((data) => {
-    currentConst = data[0];
-    document.getElementById("quiz-question").textContent =
-      currentConst.name_ko + " (" + currentConst.name_en + ")";
+  const next = allData[Math.floor(Math.random() * allData.length)];
+  currentConst = next;
 
-    drawArea.addEventListener("click", handleClick);
-    document.getElementById("submit").onclick = checkAnswer;
-    document.getElementById("reset").onclick = resetAll;
-    document.getElementById("next").onclick = loadNext;  // 여기에 넣는 게 안전
-  });
+  document.getElementById("quiz-question").textContent =
+    currentConst.name_ko + " (" + currentConst.name_en + ")";
 }
 
-fetch("../assets/data/constellations.json")
-  .then((res) => res.json())
-  .then((data) => {
-    currentConst = data[0];
-    document.getElementById("quiz-question").textContent =
-    currentConst.name_ko + " (" + currentConst.name_en + ")";
-    drawArea.addEventListener("click", handleClick);
-    document.getElementById("submit").onclick = checkAnswer;
-    document.getElementById("reset").onclick = resetAll;
-  });
 
 function handleClick(e) {
   const rect = drawArea.getBoundingClientRect();
