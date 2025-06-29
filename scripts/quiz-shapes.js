@@ -7,6 +7,11 @@ let data = [];
 let current = null;
 let allStars = [];
 let showLines = true;
+let index = 0;
+let wrongList = [];
+let isRetryMode = false;
+let answeredSet = new Set(); // 중복 방지
+
 
 const svg = document.getElementById("constellation");
 const answerInput = document.getElementById("answer");
@@ -56,28 +61,55 @@ function drawConstellation({ shape, major_stars, lines, ra_range, dec_range, cen
   }
 }//
 
+function updateProgress() {
+  const list = isRetryMode ? wrongList : data;
+  document.getElementById("progress").textContent =
+    `진행: ${index}/${list.length} | 오답 누적: ${wrongList.length}`;
+}
+
+
 function checkAnswer() {
   const guess = answerInput.value.trim().toLowerCase();
   const ko = current.name_ko.trim().toLowerCase();
   const en = current.name_en.trim().toLowerCase();
   const abbr = current.abbr.trim().toLowerCase();
 
-  if (guess === ko || guess === en || guess === abbr || guess === ko.slice(0,-2)) {
+  const isCorrect =
+    guess === ko || guess === en || guess === abbr || guess === ko.slice(0, -2);
+
+  if (isCorrect) {
     feedback.textContent = "✅ 정답입니다!";
     feedback.style.color = "lightgreen";
   } else {
     feedback.textContent = `❌ 오답! 정답: ${current.name_ko}, ${current.name_en}, ${current.abbr}`;
     feedback.style.color = "tomato";
+
+    if (!answeredSet.has(current.name_en)) {
+      wrongList.push(current);
+      answeredSet.add(current.name_en);
+    }
   }
+  updateProgress()
 }
+
 
 function loadNext() {
   feedback.textContent = '';
   answerInput.value = '';
-  const next = data[Math.floor(Math.random() * data.length)];
-  const nextStars = next.shape.map(([ra, dec]) => ({ ra, dec }));
 
-  // 수정된 부분: current를 아직 바꾸지 않음
+  const list = isRetryMode ? wrongList : data;
+
+  if (index >= list.length) {
+    feedback.textContent = isRetryMode
+      ? "🎉 오답 복습 완료!"
+      : "✅ 모든 별자리를 풀었습니다.";
+    return;
+  }
+
+  const next = list[index];
+  index++;
+
+  const nextStars = next.shape.map(([ra, dec]) => ({ ra, dec }));
   const [ra_0, dec_0] = next.center;
   const toBounds = computeProjectionBounds(next.shape, ra_0, dec_0);
   const fromBounds = computeProjectionBounds(current?.shape ?? next.shape, ra_0, dec_0);
@@ -90,7 +122,21 @@ function loadNext() {
       current = next;
     }
   );
+  updateProgress()
 }
+
+document.getElementById("retry-button").onclick = () => {
+  if (wrongList.length === 0) {
+    feedback.textContent = "❗ 오답 목록이 없습니다.";
+    return;
+  }
+
+  isRetryMode = true;
+  index = 0;
+  feedback.textContent = "🔁 오답 복습을 시작합니다!";
+  loadNext();
+};
+
 
 
 toggleBtn.onclick = () => {

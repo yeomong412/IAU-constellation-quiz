@@ -76,21 +76,23 @@ function renderResults(matches) {
 
 input.oninput = () => {
   const keyword = input.value.trim().toLowerCase();
+
+  const filtered = keyword === ""
+    ? allData
+    : allData.filter(c =>
+        c.name_ko.toLowerCase().includes(keyword) ||
+        c.name_en.toLowerCase().includes(keyword) ||
+        c.abbr.toLowerCase().includes(keyword)
+      );
+
+  renderResults(filtered);
+
+  // 검색어가 비었으면 오른쪽 영역도 초기화
   if (keyword === "") {
-    resultList.innerHTML = "";
     svg.innerHTML = "";
     infoBox.innerHTML = "";
     current = null;
-    return;
   }
-
-  const filtered = allData.filter(c =>
-    c.name_ko.toLowerCase().includes(keyword) ||
-    c.name_en.toLowerCase().includes(keyword) ||
-    c.abbr.toLowerCase().includes(keyword)
-  );
-
-  renderResults(filtered);
 };
 
 toggleBtn.onclick = () => {
@@ -101,4 +103,6 @@ toggleBtn.onclick = () => {
 
 (async function init() {
   allData = await loadData("../assets/data/constellations.json");
+  renderResults(allData);
+  input.focus();
 })();

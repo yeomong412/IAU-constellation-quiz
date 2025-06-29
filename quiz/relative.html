@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>별자리 위치 맞추기</title>
+  <link rel="stylesheet" href="../styles/main.css"/>
+</head>
+<body>
+  <header class="site-header">
+    <h1>별자리 위치 퀴즈</h1>
+  </header>
+
+  <main class="container">
+    <svg id="sky-map" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+
+    <div class="input-section">
+      <input type="text" id="nameInput" placeholder="이 빈칸에 들어갈 별자리는?" />
+      <button id="submit">제출</button>
+    </div>
+
+    <div id="feedback"></div>
+
+    <div class="controls">
+      <button id="toggle-grid">그리드 끄기</button>
+      <button id="next">다음 문제</button>
+      <button onclick="location.href='/IAU-constellation-quiz/'">홈으로</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <small>made by @yeomong0804</small>
+  </footer>
+
+  <script type="module" src="../scripts/relative.js"></script>
+</body>
+</html>

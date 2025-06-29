@@ -13,7 +13,7 @@
   </header>
   <main class="container">
     <svg id="constellation" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
-    
+    <div id="progress"></div>
     <div class="input-section">
       <input type="text" id="answer" placeholder="[/]를 눌러 입력란으로 커서 이동" />
       <button id="submit-button">제출</button>
@@ -22,6 +22,7 @@
     <div id="feedback"></div><!---->
  
     <div class="controls">
+      <button id="retry-button">오답 복습</button>
       <button id="next-button">다음 문제</button>
       <button id="toggle-lines">선 끄기</button>
       <button onclick="location.href='/IAU-constellation-quiz/'">홈으로</button>
