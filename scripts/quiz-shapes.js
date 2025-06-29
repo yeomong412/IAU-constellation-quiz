@@ -1,5 +1,7 @@
 import { loadData, raDecToXY } from './utils.js';
 import { fadeTransition } from './animate-stars.js';
+import { computeProjectionBounds } from './utils.js';
+
 
 let data = [];
 let current = null;
@@ -16,15 +18,17 @@ const toggleBtn = document.getElementById("toggle-lines");
 function coordsKey(ra, dec) { //적경 좌표와 적위 좌표 소수점 네자리에서 끊기.
   return `${ra.toFixed(4)}:${dec.toFixed(4)}`;
 }
-function drawConstellation({ shape, major_stars, lines, ra_range, dec_range }) {
+function drawConstellation({ shape, major_stars, lines, ra_range, dec_range, center}) {
   svg.innerHTML = "";
   allStars = [];
-
+  let ra_0 = center[0]
+  let dec_0 = center[1]
+  const bounds = computeProjectionBounds(shape, ra_0, dec_0);
   const majorSet = new Set(major_stars.map(s => coordsKey(s.ra, s.dec)));
 
   shape.forEach(([ra, dec]) => {
     const isMajor = majorSet.has(coordsKey(ra, dec));
-    const [x, y] = raDecToXY(ra, dec, ra_range, dec_range);
+    const [x, y] = raDecToXY(ra, dec, ra_0, dec_0, bounds);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dot.setAttribute("cx", x);
     dot.setAttribute("cy", y);
@@ -38,8 +42,8 @@ function drawConstellation({ shape, major_stars, lines, ra_range, dec_range }) {
     lines.forEach(([i, j]) => {
       const [ra1, dec1] = shape[i];
       const [ra2, dec2] = shape[j];
-      const [x1, y1] = raDecToXY(ra1, dec1, ra_range, dec_range);
-      const [x2, y2] = raDecToXY(ra2, dec2, ra_range, dec_range);
+      const [x1, y1] = raDecToXY(ra1, dec1, ra_0, dec_0, bounds);
+      const [x2, y2] = raDecToXY(ra2, dec2, ra_0, dec_0, bounds);
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", x1);
       line.setAttribute("y1", y1);
@@ -74,14 +78,18 @@ function loadNext() {
   const nextStars = next.shape.map(([ra, dec]) => ({ ra, dec }));
 
   // 수정된 부분: current를 아직 바꾸지 않음
+  const [ra_0, dec_0] = next.center;
+  const toBounds = computeProjectionBounds(next.shape, ra_0, dec_0);
+  const fromBounds = computeProjectionBounds(current?.shape ?? next.shape, ra_0, dec_0);
+
   fadeTransition(svg, allStars, nextStars, 700,
-    next.ra_range, next.dec_range,
-    current?.ra_range ?? next.ra_range,
-    current?.dec_range ?? next.dec_range,
+    ra_0, dec_0,
+    toBounds, fromBounds,
     () => {
       drawConstellation(next);
-      current = next;  // ✅ 애니메이션 끝난 후에 current 갱신
-    });
+      current = next;
+    }
+  );
 }
 
 

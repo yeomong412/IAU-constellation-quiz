@@ -1,4 +1,6 @@
 import { loadData, raDecToXY } from './utils.js';
+import { computeProjectionBounds } from './utils.js';
+
 
 let allData = [];
 let showLines = true;
@@ -14,16 +16,19 @@ function coordsKey(ra, dec) {
   return `${ra.toFixed(4)}:${dec.toFixed(4)}`;
 }
 
-function drawConstellation({ shape, major_stars, lines, ra_range, dec_range, name_ko, name_en, abbr }) {
+function drawConstellation({ shape, major_stars, lines, name_ko, name_en, abbr, center }) {
   svg.innerHTML = "";
-  current = { shape, major_stars, lines, ra_range, dec_range, name_ko, name_en, abbr }; // 현재 선택 저장
+  current = { shape, major_stars, lines, name_ko, name_en, abbr, center };
+
+  const [ra_0, dec_0] = center;
+  const bounds = computeProjectionBounds(shape, ra_0, dec_0);
 
   const majorSet = new Set(major_stars.map(s => coordsKey(s.ra, s.dec)));
 
   shape.forEach(([ra, dec]) => {
     const key = coordsKey(ra, dec);
     const isMajor = majorSet.has(key);
-    const [x, y] = raDecToXY(ra, dec, ra_range, dec_range);
+    const [x, y] = raDecToXY(ra, dec, ra_0, dec_0, bounds);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dot.setAttribute("cx", x);
     dot.setAttribute("cy", y);
@@ -36,8 +41,8 @@ function drawConstellation({ shape, major_stars, lines, ra_range, dec_range, nam
     lines.forEach(([i, j]) => {
       const [ra1, dec1] = shape[i];
       const [ra2, dec2] = shape[j];
-      const [x1, y1] = raDecToXY(ra1, dec1, ra_range, dec_range);
-      const [x2, y2] = raDecToXY(ra2, dec2, ra_range, dec_range);
+      const [x1, y1] = raDecToXY(ra1, dec1, ra_0, dec_0, bounds);
+      const [x2, y2] = raDecToXY(ra2, dec2, ra_0, dec_0, bounds);
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", x1);
       line.setAttribute("y1", y1);
@@ -51,11 +56,11 @@ function drawConstellation({ shape, major_stars, lines, ra_range, dec_range, nam
 
   infoBox.innerHTML = `
     <p><strong>${name_ko}</strong> (${name_en}, ${abbr})</p>
-    <p>RA: ${ra_range[0]}h ~ ${ra_range[1]}h</p>
-    <p>Dec: ${dec_range[0]}° ~ ${dec_range[1]}°</p>
+    <p>중심 적경 RA: ${ra_0.toFixed(2)}°, 중심 적위 Dec: ${dec_0.toFixed(2)}°</p>
     <p>별 개수: ${shape.length} / 주요 별: ${major_stars.length}</p>
   `;
 }
+
 
 function renderResults(matches) {
   resultList.innerHTML = "";

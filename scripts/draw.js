@@ -1,9 +1,13 @@
 import { loadData, raDecToXY } from './utils.js';
+import { computeProjectionBounds } from './utils.js';
+
 let stars = [];        // 사용자가 찍은 점
 let lines = [];        // 연결된 선
 let currentConst = null;
 let selectedIndex = null;
 let allData = []; // 전체 데이터 저장용
+let previewLine = null;
+let hoveredIndex = null;
 
 
 const drawArea = document.getElementById("draw-area");
@@ -16,7 +20,7 @@ fetch("../assets/data/constellations.json")
   .then((res) => res.json())
   .then((data) => {
     allData = data;
-    currentConst = allData[0];
+    currentConst = allData[Math.floor(Math.random() * allData.length)];
     document.getElementById("quiz-question").textContent =
       currentConst.name_ko + " (" + currentConst.name_en + ")";
     drawArea.addEventListener("click", handleClick);
@@ -25,7 +29,7 @@ fetch("../assets/data/constellations.json")
     document.getElementById("next").onclick = loadNext;
   });
 
-// 🔽 이건 전혀 fetch 안 씀!
+
 function loadNext() {
   stars = [];
   lines = [];
@@ -37,52 +41,102 @@ function loadNext() {
 
   const next = allData[Math.floor(Math.random() * allData.length)];
   currentConst = next;
+  // drawConstellation(currentConst); // 문제 화면 바로 출력
 
   document.getElementById("quiz-question").textContent =
     currentConst.name_ko + " (" + currentConst.name_en + ")";
+  
 }
 
+let pathStartIndex = null;  // 이어지는 선의 시작점 인덱스
 
 function handleClick(e) {
-  const rect = drawArea.getBoundingClientRect();
+  const rect =  drawArea.getBoundingClientRect();
   const x = ((e.clientX - rect.left) / rect.width) * 100;
   const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-  const near = stars.findIndex(p => Math.hypot(p.x - x, p.y - y) < 3);
+  const index = stars.findIndex(p => Math.hypot(p.x - x, p.y - y) < 3);
 
-  if (selectedIndex === null && near !== -1) {
-    selectedIndex = near;
-  } else if (selectedIndex !== null && near !== -1 && selectedIndex !== near) {
-    lines.push([selectedIndex, near]);
-    selectedIndex = null;
+  if (index !== -1) {
+    // 같은 점 다시 클릭 → 시작점 설정 or 삭제
+    if (pathStartIndex === null) {
+      pathStartIndex = index;
+    } else if (index !== pathStartIndex) {
+      lines.push([pathStartIndex, index]);
+      pathStartIndex = index;
+    } else {
+      // 같은 점 다시 누르면 삭제
+      stars.splice(index, 1);
+      lines = lines.filter(([a, b]) => a !== index && b !== index);
+      lines = lines.map(([a, b]) => [
+        a > index ? a - 1 : a,
+        b > index ? b - 1 : b
+      ]);
+      pathStartIndex = null;
+    }
   } else {
+    // 새 점
+    const newIndex = stars.length;
     stars.push({ x, y });
+
+    if (pathStartIndex !== null) {
+      lines.push([pathStartIndex, newIndex]);
+    }
+    pathStartIndex = newIndex;
   }
 
   render();
 }
 
-function render() {
-  drawArea.innerHTML = '';
-  stars.forEach(p => {
-    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    c.setAttribute("cx", p.x);
-    c.setAttribute("cy", p.y);
-    c.setAttribute("r", 1.5);
-    c.setAttribute("fill", "white");
-    drawArea.appendChild(c);
-  });
 
-  lines.forEach(([a, b]) => {
-    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    l.setAttribute("x1", stars[a].x);
-    l.setAttribute("y1", stars[a].y);
-    l.setAttribute("x2", stars[b].x);
-    l.setAttribute("y2", stars[b].y);
-    l.setAttribute("stroke", "skyblue");
-    drawArea.appendChild(l);
-  });
+function render() {
+  drawArea.innerHTML = "";
+
+  for (const [i, { x, y }] of stars.entries()) {
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", y);
+    dot.setAttribute("r", i === pathStartIndex ? 3 : 2);
+    dot.setAttribute("fill", i === pathStartIndex ? "yellow" : "white");
+    drawArea.appendChild(dot);
+  }
+
+  for (const [i, j] of lines) {
+    const { x: x1, y: y1 } = stars[i];
+    const { x: x2, y: y2 } = stars[j];
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("stroke", "white");
+    drawArea.appendChild(line);
+  }
+
+  if (previewLine) drawArea.appendChild(previewLine);
 }
+
+drawArea.addEventListener("mousemove", e => {
+  if (pathStartIndex === null) {
+    previewLine = null;
+    return render();
+  }
+
+  const rect = drawArea.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+  const { x: x1, y: y1 } = stars[pathStartIndex];
+  previewLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  previewLine.setAttribute("x1", x1);
+  previewLine.setAttribute("y1", y1);
+  previewLine.setAttribute("x2", x);
+  previewLine.setAttribute("y2", y);
+  previewLine.setAttribute("stroke", "gray");
+  previewLine.setAttribute("stroke-dasharray", "2,2");
+
+  render();
+});
 
 function resetAll() {
   stars = [];
@@ -97,18 +151,11 @@ function resetAll() {
 function checkAnswer() {
   answerArea.innerHTML = '';
 
-  // (1) 먼저 ra_range, dec_range 계산
-  const ra_list = currentConst.shape.map(([ra, _]) => ra);
-  const dec_list = currentConst.shape.map(([_, dec]) => dec);
-  const ra_min = Math.min(...ra_list), ra_max = Math.max(...ra_list);
-  const dec_min = Math.min(...dec_list), dec_max = Math.max(...dec_list);
+  const [ra_0, dec_0] = currentConst.center;
+  const bounds = computeProjectionBounds(currentConst.shape, ra_0, dec_0);
 
-  const ra_range = [ra_min, ra_max];
-  const dec_range = [dec_min, dec_max];
-
-  // (2) 좌표 변환 (정답용)
   const pts = currentConst.shape.map(([ra, dec]) => {
-    const [x, y] = raDecToXY(ra, dec, ra_range, dec_range);
+    const [x, y] = raDecToXY(ra, dec, ra_0, dec_0, bounds);
     return { x, y };
   });
 
@@ -138,7 +185,7 @@ function checkAnswer() {
   const final = (0.6 * positionScore + 0.4 * edgeScore) * 100;
 
   scoreElem.textContent = `일치도: ${final.toFixed(1)}%`;
-  if (final>=80){
+  if (final>=70){
     feedback.textContent = "✅ 정답일 확률이 높습니다!";
     feedback.style.color = "lightgreen";
   }else{
@@ -146,6 +193,25 @@ function checkAnswer() {
     feedback.style.color = "tomato";
   }
 }
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    pathStartIndex = null;
+    previewLine = null;
+    render();
+  }
+});
+
+
+// 모바일 터치 대응
+//answerArea = document.getElementById("answer-area");
+drawArea.addEventListener("touchstart", e => {
+  const touch = e.touches[0];
+  handleClick({
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+}, { passive: false });
 
 function calcPositionScore(real, user) {
   if (user.length === 0 || real.length === 0) return 0;
@@ -242,3 +308,4 @@ function calcBestMatchingScore(real, user) {
 
   return best;
 }
+drawArea.addEventListener("click", handleClick);
