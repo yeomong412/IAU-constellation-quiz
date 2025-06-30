@@ -10,7 +10,12 @@ let showLines = true;
 let index = 0;
 let wrongList = [];
 let isRetryMode = false;
-let answeredSet = new Set(); // 중복 방지
+let retryList = [];
+let retrySet = new Set();
+let currentList = [];
+let nextWrongList = [];
+let nextWrongSet = new Set(); // ✅ retryMode 오답 추적용
+let answered = false; // ✅ 현재 문제에 대해 채점했는지 여부
 
 
 const svg = document.getElementById("constellation");
@@ -61,14 +66,24 @@ function drawConstellation({ shape, major_stars, lines, ra_range, dec_range, cen
   }
 }//
 
-function updateProgress() {
-  const list = isRetryMode ? wrongList : data;
-  document.getElementById("progress").textContent =
-    `진행: ${index}/${list.length} | 오답 누적: ${wrongList.length}`;
+function shuffle(array) {
+  array.sort(() => Math.random() - 0.5);
 }
 
+function updateProgress() {
+  const total = currentList.length;
+  const wrong = isRetryMode ? nextWrongSet.size : wrongList.length;
+
+  document.getElementById("progress").textContent =
+    `진행: ${index}/${total} | 오답 누적: ${wrong}`;
+}
 
 function checkAnswer() {
+  if (answered || index >= currentList.length) return;  // ✅ 이미 제출했으면 무시
+  answered = true; // ✅ 더 이상 이 문제에 대해 checkAnswer 못 하게 잠금
+
+  if (index >= currentList.length) return; // 더 이상 문제 없으면 무시
+
   const guess = answerInput.value.trim().toLowerCase();
   const ko = current.name_ko.trim().toLowerCase();
   const en = current.name_en.trim().toLowerCase();
@@ -84,46 +99,69 @@ function checkAnswer() {
     feedback.textContent = `❌ 오답! 정답: ${current.name_ko}, ${current.name_en}, ${current.abbr}`;
     feedback.style.color = "tomato";
 
-    if (!answeredSet.has(current.name_en)) {
+    if (!isRetryMode) {
       wrongList.push(current);
-      answeredSet.add(current.name_en);
+    } else {
+      const key = current.name_en;
+      if (!nextWrongSet.has(key)) {
+        nextWrongSet.add(key);
+        nextWrongList.push(current);
+      }
     }
   }
-  updateProgress()
+
+  index++;  // ✅ 반드시 checkAnswer에서 증가
+  updateProgress();
 }
 
-
 function loadNext() {
-  feedback.textContent = '';
-  answerInput.value = '';
-
-  const list = isRetryMode ? wrongList : data;
-
-  if (index >= list.length) {
-    feedback.textContent = isRetryMode
-      ? "🎉 오답 복습 완료!"
-      : "✅ 모든 별자리를 풀었습니다.";
-    return;
+  if (index >= currentList.length) {
+    if (isRetryMode) {
+      if (nextWrongList.length === 0) {
+        feedback.textContent = "🎉 오답 복습 완료!";
+        isRetryMode = false;
+        wrongList = [];
+        nextWrongList = [];
+        nextWrongSet = new Set();
+        currentList = [];
+        return;
+      } else {
+        currentList = [...nextWrongList];
+        shuffle(currentList);
+        nextWrongList = [];
+        nextWrongSet = new Set();
+        index = 0;
+        feedback.textContent = "🔁 다시 오답 복습을 이어갑니다!";
+        setTimeout(() => loadNext(), 300);
+        return;
+      }
+    } else {
+      feedback.textContent = "✅ 모든 별자리를 풀었습니다.";
+      return;
+    }
   }
 
-  const next = list[index];
-  index++;
+  current = currentList[index];
 
-  const nextStars = next.shape.map(([ra, dec]) => ({ ra, dec }));
-  const [ra_0, dec_0] = next.center;
-  const toBounds = computeProjectionBounds(next.shape, ra_0, dec_0);
-  const fromBounds = computeProjectionBounds(current?.shape ?? next.shape, ra_0, dec_0);
+  const nextStars = current.shape.map(([ra, dec]) => ({ ra, dec }));
+  const [ra_0, dec_0] = current.center;
+  const toBounds = computeProjectionBounds(current.shape, ra_0, dec_0);
+  const fromBounds = computeProjectionBounds(current?.shape ?? current.shape, ra_0, dec_0);
+  current = currentList[index];
+  answered = false;  // ✅ 새 문제 시작할 때 초기화
 
-  fadeTransition(svg, allStars, nextStars, 700,
+  fadeTransition(svg, allStars, nextStars, 100,
     ra_0, dec_0,
     toBounds, fromBounds,
     () => {
-      drawConstellation(next);
-      current = next;
+      drawConstellation(current);
+      updateProgress();
     }
   );
-  updateProgress()
 }
+
+
+
 
 document.getElementById("retry-button").onclick = () => {
   if (wrongList.length === 0) {
@@ -132,7 +170,11 @@ document.getElementById("retry-button").onclick = () => {
   }
 
   isRetryMode = true;
+  currentList = [...wrongList];
+  nextWrongList = [];
+  nextWrongSet = new Set(); // ✅ 세트도 초기화
   index = 0;
+  shuffle(currentList);
   feedback.textContent = "🔁 오답 복습을 시작합니다!";
   loadNext();
 };
@@ -146,19 +188,18 @@ toggleBtn.onclick = () => {
 };
 submitBtn.onclick = checkAnswer;
 nextBtn.onclick = loadNext;
-answerInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    checkAnswer();
-  }
-});
+
 // 엔터 제출 + 쉬프트+엔터 다음 문제
 answerInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && e.shiftKey) {
-    loadNext();         // Shift+Enter → 다음 문제
+    checkAnswer();                 // 정답 평가 + index 증가
+    setTimeout(() => loadNext(), 300);  // 다음 문제 보여주기
   } else if (e.key === "Enter") {
-    checkAnswer();      // Enter → 정답 제출
+    checkAnswer();                 // 정답만 평가
   }
 });
+
+
 
 // 슬래시 누르면 입력창 포커스
 document.addEventListener("keydown", (e) => {
@@ -170,5 +211,8 @@ document.addEventListener("keydown", (e) => {
 
 (async function init() {
   data = await loadData('../assets/data/constellations.json');
+  shuffle(data);
+  currentList = data;
   loadNext();
 })();
+
