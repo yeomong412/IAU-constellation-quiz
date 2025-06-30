@@ -150,7 +150,7 @@ function loadNext() {
   current = currentList[index];
   answered = false;  // ✅ 새 문제 시작할 때 초기화
 
-  fadeTransition(svg, allStars, nextStars, 100,
+  fadeTransition(svg, allStars, nextStars, 300,
     ra_0, dec_0,
     toBounds, fromBounds,
     () => {
@@ -187,7 +187,10 @@ toggleBtn.onclick = () => {
   drawConstellation(current);
 };
 submitBtn.onclick = checkAnswer;
-nextBtn.onclick = loadNext;
+nextBtn.onclick = () => {
+  checkAnswer();                 // 정답 평가 + index 증가
+  setTimeout(() => loadNext(), 300);  // 다음 문제 보여주기
+};
 
 // 엔터 제출 + 쉬프트+엔터 다음 문제
 answerInput.addEventListener("keydown", (e) => {
