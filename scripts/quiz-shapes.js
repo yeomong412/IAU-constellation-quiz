@@ -219,3 +219,20 @@ document.addEventListener("keydown", (e) => {
   loadNext();
 })();
 
+document.addEventListener("DOMContentLoaded", () => {
+  const next = document.getElementById("next-button");
+  const submit = document.getElementById("submit-button");
+
+  if (next) {
+    next.onclick = () => {
+      if (!answered) checkAnswer();
+      setTimeout(() => loadNext(), 300);
+    };
+  }
+
+  if (submit) {
+    submit.onclick = () => {
+      checkAnswer();
+    };
+  }
+});
