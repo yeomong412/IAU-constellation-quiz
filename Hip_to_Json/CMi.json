@@ -1,0 +1,34 @@
+{
+  "name_en": "Canis Minor",
+  "name_ko": "작은개자리",
+  "abbr": "CMi",
+  "ra_range": [
+    112,
+    115
+  ],
+  "dec_range": [
+    5,
+    8
+  ],
+  "center": [
+    113.30658536,
+    6.757154270000001
+  ],
+  "major_stars": [
+    {
+      "name": "",
+      "ra": 0,
+      "dec": 0
+    }
+  ],
+  "is_zodiac": false,
+  "is_equatorial": false
+,
+  "shape": [
+  [114.82549301, 5.22499306],
+  [111.78767771, 8.28931548]
+],
+  "lines": [
+  [0, 1]
+]
+}

@@ -1,0 +1,34 @@
+{
+  "name_en": "Sextans",
+  "name_ko": "육분의자리",
+  "abbr": "Sex",
+  "ra_range": [
+    152,
+    158
+  ],
+  "dec_range": [
+    -4,
+    3
+  ],
+  "center": [
+    154.778666555,
+    -0.5043313500000001
+  ],
+  "major_stars": [
+    {
+      "name": "",
+      "ra": 0,
+      "dec": 0
+    }
+  ],
+  "is_zodiac": false,
+  "is_equatorial": false
+,
+  "shape": [
+  [157.57283183, -0.63702597],
+  [151.98450128, -0.37163673]
+],
+  "lines": [
+  [0, 1]
+]
+}

@@ -1,0 +1,34 @@
+{
+  "name_en": "Telescopium",
+  "name_ko": "망원경자리",
+  "abbr": "Tel",
+  "ra_range": [
+    275,
+    279
+  ],
+  "dec_range": [
+    -49,
+    -46
+  ],
+  "center": [
+    276.97557297000003,
+    -47.51952336
+  ],
+  "major_stars": [
+    {
+      "name": "",
+      "ra": 0,
+      "dec": 0
+    }
+  ],
+  "is_zodiac": false,
+  "is_equatorial": false
+,
+  "shape": [
+  [277.2077448, -49.07058791],
+  [276.74340114, -45.96845881]
+],
+  "lines": [
+  [0, 1]
+]
+}

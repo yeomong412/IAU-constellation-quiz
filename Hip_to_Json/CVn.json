@@ -1,0 +1,34 @@
+{
+  "name_en": "Canes Venatici",
+  "name_ko": "사냥개자리",
+  "abbr": "CVn",
+  "ra_range": [
+    188,
+    194
+  ],
+  "dec_range": [
+    37,
+    43
+  ],
+  "center": [
+    191.22127493999997,
+    39.837929775000006
+  ],
+  "major_stars": [
+    {
+      "name": "",
+      "ra": 0,
+      "dec": 0
+    }
+  ],
+  "is_zodiac": false,
+  "is_equatorial": false
+,
+  "shape": [
+  [188.43560252, 41.35747975],
+  [194.00694736, 38.3183798]
+],
+  "lines": [
+  [0, 1]
+]
+}

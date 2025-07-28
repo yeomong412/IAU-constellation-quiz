@@ -1,0 +1,34 @@
+{
+  "name_en": "Vulpecula",
+  "name_ko": "여우자리",
+  "abbr": "Vul",
+  "ra_range": [
+    292,
+    301
+  ],
+  "dec_range": [
+    22,
+    31
+  ],
+  "center": [
+    296.225787925,
+    26.209238915
+  ],
+  "major_stars": [
+    {
+      "name": "",
+      "ra": 0,
+      "dec": 0
+    }
+  ],
+  "is_zodiac": false,
+  "is_equatorial": false
+,
+  "shape": [
+  [292.17637441, 24.66490477],
+  [300.27520144, 27.75357306]
+],
+  "lines": [
+  [0, 1]
+]
+}
